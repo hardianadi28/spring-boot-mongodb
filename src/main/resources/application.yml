@@ -1,0 +1,6 @@
+#spring.data.mongodb.uri=mongodb://user:secret@mongo1.example.com:12345
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://root:root@localhost:27017/sampledb
