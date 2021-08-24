@@ -1,5 +1,6 @@
 package id.hardian.practice.springbootmongodb.controller;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import id.hardian.practice.springbootmongodb.data.entity.Product;
 import id.hardian.practice.springbootmongodb.network.dto.product.ProductResponse;
@@ -41,19 +43,22 @@ public class ProductController {
 	}
 
 	@PostMapping
-	ResponseEntity<ProductResponse> saveProduct(@RequestBody SaveProductRequest req) {
+	ResponseEntity<Void> saveProduct(@RequestBody SaveProductRequest req) {
 		Product prod = new Product();
 		prod.setProductCode(req.getProductCode());
 		prod.setProductName(req.getProductName());
 		prod.setProductPrice(req.getProductPrice());
 		prod.setProductStock(req.getProductStock());
 		Product savedProd = productService.save(prod);
-		
+
 		ProductResponse response = new ProductResponse();
 		mapToDto(response, savedProd);
-		return ResponseEntity.ok(response);
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(savedProd.getId())
+				.toUri();
+
+		return ResponseEntity.created(location).build();
 	}
-	
+
 	@GetMapping
 	ResponseEntity<List<ProductResponse>> getAllProducts() {
 		List<Product> list = productService.getAll();
@@ -62,10 +67,10 @@ public class ProductController {
 			mapToDto(response, prod);
 			return response;
 		}).collect(Collectors.toList());
-		
+
 		return ResponseEntity.ok(listResp);
 	}
-	
+
 	private void mapToDto(ProductResponse response, Product entity) {
 		response.setId(entity.getId());
 		response.setProductCode(entity.getProductCode());
